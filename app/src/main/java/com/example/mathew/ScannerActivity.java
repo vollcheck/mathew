@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -65,11 +66,11 @@ public class ScannerActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, new String[]{CAMERA}, PERMISSION_CODE);
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     private void captureImage() {
         Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePicture.resolveActivity(getPackageManager()) != null) {
+        if (takePicture.resolveActivity(getPackageManager()) != null)
             startActivityForResult(takePicture, REQUEST_IMAGE_CAPTURE);
-        }
     }
 
 
@@ -120,8 +121,8 @@ public class ScannerActivity extends AppCompatActivity {
                     for (Text.Element element : line.getElements()) {
                         String elementText = element.getText();
                         result_.append(elementText);
+                    resultTV.setText(result_);
                     }
-                    resultTV.setText(blockText);
                 }
             }
         }).addOnFailureListener(e -> Toast.makeText(ScannerActivity.this, "Fail to detect text from image", Toast.LENGTH_SHORT).show());

@@ -15,8 +15,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        captureBtn = (Button)findViewById(R.id.idBtnCapture);
-        captureBtn.setOnClickListener((View.OnClickListener) v -> {
+        captureBtn = findViewById(R.id.idBtnCapture);
+        captureBtn.setOnClickListener(v -> {
             Intent i = new Intent(MainActivity.this, ScannerActivity.class);
             startActivity(i);
         });
