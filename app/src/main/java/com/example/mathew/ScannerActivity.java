@@ -113,7 +113,6 @@ public class ScannerActivity extends AppCompatActivity {
             return;
         }
 
-        // TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
         TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
         Task<Text> result = recognizer.process(image).addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
@@ -129,17 +128,12 @@ public class ScannerActivity extends AppCompatActivity {
                         Rect lineRect = line.getBoundingBox();
                         for (Text.Element element : line.getElements()) {
                             String elementText = element.getText();
-                            result.append(elementText);
-                            resultTV.setText(blockText);
+                            result.append(elementText).append('\n');
                         }
                     }
                 }
+                resultTV.setText(result);
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(ScannerActivity.this, "Fail to detect text from image" + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        }).addOnFailureListener(e -> Toast.makeText(ScannerActivity.this, "Fail to detect text from image" + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }
