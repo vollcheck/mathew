@@ -20,12 +20,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
-import com.google.mlkit.vision.text.TextRecognizerOptions;
+// import com.google.mlkit.vision.text.TextRecognizerOptions;
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import javax.annotation.Nullable;
 
@@ -75,7 +78,7 @@ public class ScannerActivity extends AppCompatActivity {
 
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults.length > 0) {
             boolean cameraPermission = grantResults[0] == PackageManager.PERMISSION_GRANTED;
@@ -92,7 +95,10 @@ public class ScannerActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
+            Bundle extras = null;
+            if (data != null) {
+                extras = data.getExtras();
+            }
             imageBitmap = (Bitmap) extras.get("data");
             captureIV.setImageBitmap(imageBitmap);
         }
@@ -107,25 +113,33 @@ public class ScannerActivity extends AppCompatActivity {
             return;
         }
 
+        // TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
         TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
-        Task<Text> result = recognizer.process(image).addOnSuccessListener(text -> {
-            StringBuilder result_ = new StringBuilder();
-            for (Text.TextBlock block : text.getTextBlocks()) {
-                String blockText = block.getText();
-                Point[] blockCornerPoint = block.getCornerPoints();
-                Rect blockFrame = block.getBoundingBox();
-                for (Text.Line line : block.getLines()) {
-                    String lineText = line.getText();
-                    Point[] lineCornerPoint = line.getCornerPoints();
-                    Rect lineRect = line.getBoundingBox();
-                    for (Text.Element element : line.getElements()) {
-                        String elementText = element.getText();
-                        result_.append(elementText);
-                    resultTV.setText(result_);
+        Task<Text> result = recognizer.process(image).addOnSuccessListener(new OnSuccessListener<Text>() {
+            @Override
+            public void onSuccess(@NonNull Text text) {
+                StringBuilder result = new StringBuilder();
+                for (Text.TextBlock block : text.getTextBlocks()) {
+                    String blockText = block.getText();
+                    Point[] blockCornerPoint = block.getCornerPoints();
+                    Rect blockFrame = block.getBoundingBox();
+                    for (Text.Line line : block.getLines()) {
+                        String lineText = line.getText();
+                        Point[] lineCornerPoint = line.getCornerPoints();
+                        Rect lineRect = line.getBoundingBox();
+                        for (Text.Element element : line.getElements()) {
+                            String elementText = element.getText();
+                            result.append(elementText);
+                            resultTV.setText(blockText);
+                        }
                     }
                 }
             }
-        }).addOnFailureListener(e -> Toast.makeText(ScannerActivity.this, "Fail to detect text from image", Toast.LENGTH_SHORT).show());
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(ScannerActivity.this, "Fail to detect text from image" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
-
 }
